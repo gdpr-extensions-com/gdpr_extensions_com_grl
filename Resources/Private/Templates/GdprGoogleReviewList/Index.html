@@ -1,0 +1,322 @@
+<html
+  xmlns:f="http://typo3.org/ns/TYPO3/CMS/Fluid/ViewHelpers"
+  data-namespace-typo3-fluid="true">
+
+  {namespace
+  my=GdprExtensionsCom\GdprExtensionsComGrl\ViewHelpers}
+  {namespace v=FluidTYPO3\Vhs\ViewHelpers}
+
+  <f:layout name="Default" />
+  <f:section name="content">
+  <f:asset.css identifier="reviewcss" href="EXT:gdpr_extensions_com_grl/Resources/Public/Css/review.css" />
+  <style type="text/css">
+    /* for widget*/
+    body {
+      font-family: 'Arial', sans-serif;
+    }
+
+    .review-container {
+      width: 100%;
+      margin: 0 auto;
+    }
+
+    .review {
+      border: 1px solid #ccc;
+      padding: 20px;
+      margin-bottom: 20px;
+      background-color: #f9f9f9;
+    }
+
+    .review h2 {
+      margin: 0;
+    }
+
+    .date {
+      color: #666;
+    }
+
+    .rating {
+      color: #FFD700; /* Gold color for stars */
+    }
+
+    .comment {
+      font-size: 16px;
+      color: #333;
+    }
+
+    .source {
+      text-align: right;
+      color: #666;
+    }
+
+    .load-more-btn {
+      display: block;
+      width: 200px;
+      padding: 10px 20px;
+      margin: 20px auto;
+      background-color: orange;
+      color: white;
+      border: none;
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    .load-more-btn:hover {
+      background-color: #e69500;
+    }
+
+  </style>
+    <div class="review-ext">
+      <div class="review-bg d-none" style="background-color: {data.gdpr_background_color_list};">
+        <div class="container">
+          <div class="review-page">
+            <span class="d-none border-color"><f:format.raw>{data.gdpr_color_of_border_list}</f:format.raw></span>
+            <span class="d-none bg-container-color"><f:format.raw>{data.gdpr_background_color_list}</f:format.raw></span>
+            <span class="d-none review-txt-color"><f:format.raw>{data.gdpr_color_of_text_list}</f:format.raw></span>
+            <div class="review-page__content">
+              <div class="review-page__sort">
+                <div class="dropdown">
+                  <p style="color: {data.gdpr_color_of_text_list};"><f:translate key="Sorting" extensionName="GdprExtensionsComGrl" /></p>
+                  <div class="select">
+                    <span class="select-title" style="color: {data.gdpr_color_of_text_list};"><f:translate key="Latest" extensionName="GdprExtensionsComGrl" /></span>
+                    <div class="arrow" style="border-top-color: {data.gdpr_color_of_text_list};"></div>
+                  </div>
+                  <ul class="menu" style="background-color: {data.gdpr_color_of_sort_dropdown_list};">
+                    <li data-value="1" style="color: {data.gdpr_color_of_sort_dropdown_text_list}; border-bottom: 1px solid {data.gdpr_color_of_sort_dropdown_text_list}"><f:translate key="Descending" extensionName="GdprExtensionsComGrl" /></li>
+                    <li data-value="2" style="color: {data.gdpr_color_of_sort_dropdown_text_list};"><f:translate key="Ascending" extensionName="GdprExtensionsComGrl" /></li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+            <div class="review-page__content">
+              <div id="reviews-list" class="review-container">
+      
+              </div>
+            </div>
+          </div>
+          <f:format.raw>
+            <button class="load-more-btn {f:if(condition:'{data.gdpr_button_shape_list}==1', then:'load-more-round', else: 'right-time')}" data-next-page="{reviews.nextPageToken}" id="loadMoreReviews" style="color: {data.gdpr_button_text_color_list}; background-color: {data.gdpr_button_color_list};"> <f:translate key="loadMore" extensionName="GdprExtensionsComGrl" /></button>
+          </f:format.raw>
+        </div>
+        <div class="star">
+        </div>
+      </div>
+    </div>
+
+    <script>
+       let reviewsArray = [];
+       let loadMoreButton = document.getElementById('loadMoreReviews');
+       let reviewsContainer = document.getElementById('reviews-list');
+       let borderColor = document.querySelector('.border-color');
+       let bgContainerColor = document.querySelector('.bg-container-color');
+       let reviewTextColor = document.querySelector('.review-txt-color');
+           
+       var dropdown = document?.querySelector('.dropdown');
+        var menu = dropdown?.querySelector('.menu');
+      	function updateReviews() {
+        let reviewsContainer = document.getElementById('reviews-list');
+        let reviewExt = document.querySelector('.review-ext .review-bg');
+        reviewsContainer.innerHTML = '';
+        reviewsArray.forEach(review => {
+          let reviewDiv = document.createElement('div'); // Create review div
+          reviewDiv.className = 'review';
+          reviewDiv.style.borderColor = borderColor?.textContent;
+          reviewDiv.style.backgroundColor = bgContainerColor?.textContent;
+
+          let reviewUserDiv = document.createElement('div'); // Create review user div which has name and date
+          reviewUserDiv.className = 'review__user';
+          reviewDiv.appendChild(reviewUserDiv);
+
+          let reviewUserImageDiv = document.createElement('img'); // Create review user Image div 
+          reviewUserImageDiv.className = 'review__user-list-image';
+          reviewUserImageDiv.src = review.reviewer_profile_photo_url;
+          reviewUserDiv.appendChild(reviewUserImageDiv);
+
+          let name_P_Tag = document.createElement('p'); // Create review name render in review user
+          name_P_Tag.className = 'review__user-name'
+          name_P_Tag.textContent = review.reviewer_display_name;
+          name_P_Tag.style.fontWeight = 'bold';
+          name_P_Tag.style.marginBottom = '7px';
+          name_P_Tag.style.color = reviewTextColor?.textContent;
+          reviewUserDiv.appendChild(name_P_Tag);
+
+          let date_P_tag = document.createElement('p'); // Create review date render in review user
+          date_P_tag.className = 'review__user-date';
+          date_P_tag.style.color = reviewTextColor?.textContent;
+          date_P_tag.textContent = review.create_time;
+          reviewUserDiv.appendChild(date_P_tag);
+
+          let reviewContent = document.createElement('div'); // Create review content div
+          reviewContent.className = 'review__content';
+          reviewDiv.appendChild(reviewContent);
+
+          let ratingDiv = document.createElement('div'); // Create review content stars
+          ratingDiv.className = 'review__rating';
+          let starElements = createRatingDiv(review.star_rating);
+          ratingDiv.appendChild(starElements);
+          reviewContent.appendChild(ratingDiv);
+
+          let comment_P_tag = document.createElement('p');
+          comment_P_tag.className = 'review__text';
+          comment_P_tag.style.color = reviewTextColor?.textContent;
+          let commentText = review.comment;
+
+          if (commentText.length > 285) {
+
+            let truncatedComment = commentText.slice(0, 285);
+            let halfTextDiv = document.createElement('div');
+            halfTextDiv.className = 'half-text';
+
+            let truncateSpan = document.createElement('span');
+            halfTextDiv.append(truncateSpan)
+            truncateSpan.textContent = truncatedComment;
+            
+            let halfTextSpan = document.createElement('span');
+            halfTextSpan.classList = 'half-text--dots';
+            halfTextSpan.textContent = '...';
+            halfTextDiv.appendChild(halfTextSpan);
+
+            let moreTextSpan = document.createElement('span');
+            moreTextSpan.classList = 'go-reviewsclient-more-text';
+            moreTextSpan.textContent = commentText.slice(285);
+            halfTextDiv.appendChild(moreTextSpan)
+            
+            let seeLess_a_tag = document.createElement('a');
+            seeLess_a_tag.className = 'go-reviewsclient-see-less';
+            seeLess_a_tag.style.color = reviewTextColor?.textContent;
+            seeLess_a_tag.textContent = 'weniger zeigen';
+
+            let seeMore_a_tag = document.createElement('a');
+            seeMore_a_tag.className = 'go-reviewsclient-see-more';
+            seeMore_a_tag.style.color = reviewTextColor?.textContent;
+            seeMore_a_tag.textContent = 'mehr anzeigen';
+
+            comment_P_tag.append(halfTextDiv);
+            comment_P_tag.append(seeLess_a_tag);
+            comment_P_tag.append(seeMore_a_tag);
+
+            seeMore_a_tag.addEventListener('click', function() {
+              moreTextSpan.style.display = 'inline';
+              seeMore_a_tag.style.display = 'none';
+              seeLess_a_tag.style.display = 'inline';
+              halfTextSpan.style.display = 'none';
+            });
+
+            seeLess_a_tag.addEventListener('click', function() {
+              moreTextSpan.style.display = 'none';
+              seeMore_a_tag.style.display = 'inline';
+              seeLess_a_tag.style.display = 'none';
+              halfTextSpan.style.display = 'inline';
+            });
+
+          } else {
+            comment_P_tag.textContent = commentText;
+          }
+          reviewContent.appendChild(comment_P_tag);
+
+          let sourceP = document.createElement('p'); // Create review content source
+          sourceP.className = 'review__source';
+          sourceP.textContent = 'Quelle: ' + review.source;
+          sourceP.style.color = reviewTextColor?.textContent;
+          reviewContent.appendChild(sourceP);
+
+          reviewsContainer.appendChild(reviewDiv);
+          reviewExt.classList.remove('d-none');
+        });
+		}
+
+
+		function createRatingDiv(starRating) {
+			const ratingDiv = document.createElement('div');
+			ratingDiv.className = 'review__starParent'
+			
+			for (let i = 0; i < starRating; i++) {
+				const starImg = document.createElement('div');
+				starImg.className = 'review__star';
+				ratingDiv.appendChild(starImg);
+			}
+			
+			return ratingDiv;
+		}
+    function fetchReviews(reveiwsToFetch = 0 , sort  = 0) {
+          const showReviewsUrl = '<f:format.raw>{showReviewsUrl}</f:format.raw>';
+          const formData = new FormData();
+          formData.append("reveiwsToFetch", reveiwsToFetch);
+          formData.append("sort", sort);
+          fetch(showReviewsUrl, {
+            method: 'POST',
+            headers: {
+              'Accept': 'application/json'
+            },
+            body: formData
+          })
+          .then(response => {
+            if (!response.ok) {
+              throw new Error('Request failed');
+            }
+            return response.text();
+          })
+          .then(data => {
+            parsedData = JSON.parse(data);
+            console.log(parsedData);
+            reviewsArray = parsedData.fetchedReviews;
+            Completed = parsedData.Completed;
+            console.log(reviewsArray);
+              if(Completed ==1){
+                    loadMoreButton.classList.add('d-none')
+                  }
+              if(reviewsArray.length  == 0){
+                    loadMoreButton.classList.add('d-none');
+              }
+              else{
+                updateReviews();
+              }
+          })
+          .catch(error => {
+            console.error(error);
+          });
+        }
+
+        window.onload = function() {
+            fetchReviews();
+        }
+
+        menu.addEventListener('click', function (event) {
+            var selectedValue = event.target.dataset.value;
+            fetchReviews(reviewsArray.length  , selectedValue);
+            
+        });
+
+		
+        loadMoreButton.onclick = function() {
+              fetchReviews(reviewsArray.length +10 );
+             console.log('Load more button clicked.');
+        }
+
+		document.addEventListener('DOMContentLoaded', function() {
+			const dropdown = document.querySelector('.review-ext .review-page__sort .dropdown');
+			const selectTitle = dropdown.querySelector('.select');
+			const menu = dropdown.querySelector('.menu');
+
+			function toggleMenu() {
+				menu.classList.toggle('open');
+			}
+
+			function closeMenu(event) {
+				if (!dropdown.contains(event.target)) {
+					menu.classList.remove('open');
+					document.removeEventListener('click', closeMenu);
+				}
+			}
+
+			selectTitle.addEventListener('click', function() {
+				toggleMenu();
+				document.addEventListener('click', closeMenu);
+			});
+		});
+		
+    </script>
+
+  </f:section>
+
+</html>
